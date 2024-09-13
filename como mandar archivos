@@ -1,0 +1,7 @@
+scp -pv filepath santiago@superc.iem.csic.es:directory_path
+
+or backwards
+
+scp -pv santiago@superc.iem.csic.es:directory_path filepath
+
+./
