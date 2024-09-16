@@ -169,9 +169,10 @@ def generate_macpath(n_pts, deltaK, Qs, starting_cell = (0, 0)):
 
     return ks
 
-def grad(E, x, deltaK):
+def grad(E, x, slice, deltaK):
+    #here slice is x lenx/len(generatemacpath)
     grad = np.zeros_like(E)
-    unit = deltaK * (3 + np.sqrt(3)) / len(x)
+    unit = deltaK * (3 + np.sqrt(3)) * slice / len(x)
 
     for i in range(1, len(E) - 1):
         grad[i] = (E[i + 1] - E[i - 1]) / unit
@@ -181,10 +182,9 @@ def grad(E, x, deltaK):
 
     return grad
 
-def grad_at_cone(E, x, deltaK):
-    cone_index = int(len(x) * 1/(3+np.sqrt(3)))
-    g = grad(E, x, deltaK)
-    return g[cone_index]
+def grad_at_cone(E, x, slice, deltaK):
+    g = grad(E, x, slice, deltaK)
+    return g[len(x) // 2 + 1]
 
 #THIS IS NOT A SCRIPT, IT IS A MODULE. THIS IS FOR DEBUGGING:
 if __name__ == '__main__':
