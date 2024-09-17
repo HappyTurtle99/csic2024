@@ -5,27 +5,27 @@ import sys
 import os
 import datetime
 
-def run_for_theta(theta):
-    system = system_theta(theta)
-    return system.get_grad_at_cone(5)
+
+#really the input is alpha squared!! output is in radians
+def get_theta(alpha):
+    K = 4 * np.pi / 3
+    vf = np.sqrt(3) * 2.7 / 2
+    return 2 * np.arcsin(0.11/(2 * vf * K * np.sqrt(alpha)))
 
 def main():
 
-    theta1 = float(sys.argv[1])
-    theta2 = float(sys.argv[2])
-
+    #really alpha ** 2
+    alpha1 = float(sys.argv[1])
+    alpha2 = float(sys.argv[2])
 
     #this thetas is in degrees
-    thetas = np.linspace(theta1, theta2, 100)
-    alphas = np.zeros_like(thetas)
-
+    alphas = np.linspace(alpha1, alpha2, 100)
 
     #make sure to input in radians!
     renorm_vs = []
-    for i, theta in enumerate(thetas):
-        system = system_theta(np.radians(theta))
-        renorm_vs.append(system.get_grad_at_cone(5))
-        alphas[i] = system.alphasq
+    for i, alpha in enumerate(alphas):
+        system = system_theta(get_theta(alpha))
+        renorm_vs.append(system.get_grad_at_cone())
 
     renorm_vs = np.array(renorm_vs)
 

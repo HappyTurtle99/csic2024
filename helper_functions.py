@@ -168,12 +168,12 @@ def generate_macpath(n_pts, deltaK, Qs, starting_cell = (0, 0)):
     return ks
 
 def grad(E, x, slice, deltaK):
-    #here slice is x lenx/len(generatemacpath)
+    #here slice is lenx/len(generatemacpath)
     grad = np.zeros_like(E)
     unit = deltaK * (3 + np.sqrt(3)) * slice / len(x)
 
     for i in range(1, len(E) - 1):
-        grad[i] = (E[i + 1] - E[i - 1]) / unit
+        grad[i] = (E[i + 1] - E[i - 1]) / 2 / unit
 
     grad[0] = (E[1] - E[0]) / unit
     grad[-1] = (E[-1] - E[-2]) / unit
@@ -182,39 +182,5 @@ def grad(E, x, slice, deltaK):
 
 def grad_at_cone(E, x, slice, deltaK):
     g = grad(E, x, slice, deltaK)
-    return g[len(x) // 2 + 1]
+    return g[len(x) // 2]
 
-#THIS IS NOT A SCRIPT, IT IS A MODULE. THIS IS FOR DEBUGGING:
-if __name__ == '__main__':
-
-    #PARAMETROS
-    K = 4 * np.pi / 3
-    i = 31
-    t = 0.11
-    U = 0
-
-    theta = np.arccos((3 * i ** 2 + 3 * i + 0.5) / (3 * i ** 2 + 3 * i + 1))
-    deltaK = 2 * K * np.sin(theta / 2)
-    deltaK_vec = np.array([0, deltaK])
-    vf = 0.76 / deltaK
-
-    #DEFINE LOS VECTORES REALES Y RECIPROCOS
-    a1 = np.array([1, np.sqrt(3)]) / 2
-    a2 = np.array([-1, np.sqrt(3)]) / 2
-    # G1 = (4 * np.pi) * ((3 * i + 1) * a1 + a2) / (3 * (3 * i ** 2 + 3 * i + 1))
-    # G2 = (4 * np.pi) * (-(3 * i + 2) * a1 + (3 * i + 1) * a2) / (3 * (3 * i ** 2 + 3 * i + 1))
-    # Gs = (G1, G2)
-
-    G1 = deltaK * np.array([np.sqrt(3)/2, 1/2])
-    G2 = deltaK * (np.array([-np.sqrt(3)/2, 1/2]))-G1
-    Gs = (G1, G2)
-
-    q0 = deltaK * np.array([0, -1])
-    q1 = deltaK * np.array([np.sqrt(3)/2, 1/2])
-    q2 = deltaK * np.array([-np.sqrt(3)/2, 1/2])
-    Qs = (q0, q1, q2)
-
-    np.set_printoptions(threshold = sys.maxsize)
-
-    H = populate_hamiltonian(0, 0, Qs, deltaK_vec, t, theta, vf, U=0)
-    ks = generate_macpath(100, deltaK)
