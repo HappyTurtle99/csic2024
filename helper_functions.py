@@ -1,4 +1,3 @@
-from numba import jit
 import numpy as np
 import numpy.linalg as LA
 import sys
