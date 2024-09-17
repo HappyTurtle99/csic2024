@@ -3,7 +3,6 @@ import numpy as np
 import numpy.linalg as LA
 import sys
 
-@jit(nopython=True)
 def d_entry(K, vf):
     return -1 * (K[0] + 1j * K[1]) * vf
 
@@ -121,7 +120,6 @@ def band_energy(kx, ky, Qs, deltaK, t, theta, vf, N=None, U=0):
     H = populate_hamiltonian(kx, ky, Qs, deltaK, t, theta, vf, N=N, U=U)
     return LA.eigvalsh(H)
 
-@jit(nopython=True) 
 def calculate_bands():
     return
 

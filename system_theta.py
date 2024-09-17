@@ -2,7 +2,7 @@ import numpy as np
 from helper_functions import *
 
 class system_theta():
-    def __init__(self, theta, N=None, U=None) -> None:
+    def __init__(self, theta, N=None, U=None):
         
         #get deltaK exactly:
         self.K = 4 * np.pi / 3
