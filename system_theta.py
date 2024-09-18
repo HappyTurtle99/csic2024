@@ -58,6 +58,6 @@ class system_theta():
     def get_grad_at_cone(self):
         h = 0.03 * self.deltaK
         v1 = band_energy(0, 0, self.Qs, self.K, self.t, self.theta, self.vf, U=self.U, N=self.N)[self.midband - 1]
-        v2 = band_energy(0, h , self.Qs, self.K, self.t, self.theta, self.vf, U=self.U, N=self.N)[self.midband - 1]
+        v2 = band_energy(h, 0, self.Qs, self.K, self.t, self.theta, self.vf, U=self.U, N=self.N)[self.midband - 1]
         return (v2 - v1) / h / self.vf
 
