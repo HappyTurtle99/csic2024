@@ -1,14 +1,13 @@
 import numpy as np
 import numpy.linalg as LA
 import sys
+import numba
 
 def d_entry(K, vf):
     return -1 * (K[0] + 1j * K[1]) * vf
 
-# @jit(nopython=True) 
-#SHOULD REALLY MAKE NUMBA COMPATIBLE, BUT THE POPULATION IS NOT THAT BAD
+@jit(nopython=True) 
 def populate_hamiltonian(kx, ky, Qs, deltaK_vec, t, theta, vf, N=None, U=0):
-    
     dk = np.array([kx, ky])
 
     q0, q1, q2 = Qs
@@ -115,12 +114,10 @@ def populate_hamiltonian(kx, ky, Qs, deltaK_vec, t, theta, vf, N=None, U=0):
     H = H_init + H_init.conj().T
     return H
 
+@jit(nopython=True)
 def band_energy(kx, ky, Qs, deltaK, t, theta, vf, N=None, U=0):
     H = populate_hamiltonian(kx, ky, Qs, deltaK, t, theta, vf, N=N, U=U)
     return LA.eigvalsh(H)
-
-def calculate_bands():
-    return
 
 def generate_vectors(A, B, C, N):
     A_hat = A / np.linalg.norm(A)
