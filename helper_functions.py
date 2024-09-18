@@ -1,12 +1,11 @@
 import numpy as np
 import numpy.linalg as LA
 import sys
-import numba
+from numba import jit
 
 def d_entry(K, vf):
     return -1 * (K[0] + 1j * K[1]) * vf
 
-@jit(nopython=True) 
 def populate_hamiltonian(kx, ky, Qs, deltaK_vec, t, theta, vf, N=None, U=0):
     dk = np.array([kx, ky])
 
@@ -114,7 +113,6 @@ def populate_hamiltonian(kx, ky, Qs, deltaK_vec, t, theta, vf, N=None, U=0):
     H = H_init + H_init.conj().T
     return H
 
-@jit(nopython=True)
 def band_energy(kx, ky, Qs, deltaK, t, theta, vf, N=None, U=0):
     H = populate_hamiltonian(kx, ky, Qs, deltaK, t, theta, vf, N=N, U=U)
     return LA.eigvalsh(H)

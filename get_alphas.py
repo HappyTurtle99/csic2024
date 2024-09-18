@@ -25,7 +25,7 @@ def main():
     renorm_vs = []
     for i, alpha in enumerate(alphas):
         system = system_theta(get_theta(alpha))
-        renorm_vs.append(system.get_grad_at_cone())
+        renorm_vs.append(system.band_diff_at_cone())
 
     renorm_vs = np.array(renorm_vs)
 
