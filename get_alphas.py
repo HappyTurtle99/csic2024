@@ -17,9 +17,10 @@ def main():
     #really alpha ** 2
     alpha1 = float(sys.argv[1])
     alpha2 = float(sys.argv[2])
+    N = int(sys.argv[3])
 
     #this thetas is in degrees
-    alphas = np.linspace(alpha1, alpha2, 100)
+    alphas = np.linspace(alpha1, alpha2, N)
 
     #make sure to input in radians!
     renorm_vs = []
