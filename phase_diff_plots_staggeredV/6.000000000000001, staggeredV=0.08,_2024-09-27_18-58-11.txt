@@ -1,0 +1,3 @@
+Differences: 
+ Phase difference 1 -0.7010922212287327 
+ Phase difference final -0.719200385845652 

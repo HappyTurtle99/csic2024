@@ -1,16 +1,12 @@
-from numba import jit
 import numpy as np
 import numpy.linalg as LA
 import sys
+from numba import jit
 
-@jit(nopython=True)
 def d_entry(K, vf):
     return -1 * (K[0] + 1j * K[1]) * vf
 
-# @jit(nopython=True) 
-#SHOULD REALLY MAKE NUMBA COMPATIBLE, BUT THE POPULATION IS NOT THAT BAD
 def populate_hamiltonian(kx, ky, Qs, deltaK_vec, t, theta, vf, N=None, U=0):
-    
     dk = np.array([kx, ky])
 
     q0, q1, q2 = Qs
@@ -19,7 +15,7 @@ def populate_hamiltonian(kx, ky, Qs, deltaK_vec, t, theta, vf, N=None, U=0):
 
     if not N:
         #Calculate number of unit cells:
-        N = 2 * int(np.radians(3.9) / theta / 1.5) + 1
+        N = int(2 * int(np.radians(3.9) / theta / 1.5) + 1)
 
         if N == 1:
             N = 3
@@ -115,15 +111,25 @@ def populate_hamiltonian(kx, ky, Qs, deltaK_vec, t, theta, vf, N=None, U=0):
         H_init[n, n + 1] = d_entry(q0 + dk + center, vf)
     
     H = H_init + H_init.conj().T
+
+    #staggered potential
+    sgn = 1
+    for i in range(4 * N ** 2):
+        H[i, i] = U * sgn
+        sgn *= -1
+
     return H
 
 def band_energy(kx, ky, Qs, deltaK, t, theta, vf, N=None, U=0):
     H = populate_hamiltonian(kx, ky, Qs, deltaK, t, theta, vf, N=N, U=U)
     return LA.eigvalsh(H)
 
-@jit(nopython=True) 
-def calculate_bands():
-    return
+def leveln(kx, ky, Qs, deltaK, t, theta, vf, n, N=None, U=0):
+    H = populate_hamiltonian(kx, ky, Qs, deltaK, t, theta, vf, N=N, U=U)
+    _, vectors = LA.eigh(H)
+    midband = int(len(vectors) / 2) #index of the middle band with positive energy
+    leveln = vectors[:, midband + n]
+    return leveln
 
 def generate_vectors(A, B, C, N):
     A_hat = A / np.linalg.norm(A)
@@ -134,10 +140,21 @@ def generate_vectors(A, B, C, N):
     return vectors
 
 def generate_path(N, pt1, pt2):
+    N = int(N)
     diff = pt2 - pt1
     step_size = np.linalg.norm(diff) / (N - 1)
     vectors = np.array([pt1 + i * step_size * diff / np.linalg.norm(diff) for i in range(N)])
     return vectors
+
+#here, you generate a set of points including only one of the endpoints
+#pt1 or pt2, and you specify which.
+def generate_path_special(N, pt1, pt2, p):
+    path_union = generate_path(N + 1, pt1, pt2)
+    #if p == 1, return the path including pt1
+    if p == 0:
+        return path_union[:-1]
+    else:
+        return path_union[1:]
 
 #generate the path in momentum space used in macdonald's paper
 def generate_macpath(n_pts, deltaK, Qs, starting_cell = (0, 0)):
@@ -170,12 +187,12 @@ def generate_macpath(n_pts, deltaK, Qs, starting_cell = (0, 0)):
     return ks
 
 def grad(E, x, slice, deltaK):
-    #here slice is x lenx/len(generatemacpath)
+    #here slice is lenx/len(generatemacpath)
     grad = np.zeros_like(E)
     unit = deltaK * (3 + np.sqrt(3)) * slice / len(x)
 
     for i in range(1, len(E) - 1):
-        grad[i] = (E[i + 1] - E[i - 1]) / unit
+        grad[i] = (E[i + 1] - E[i - 1]) / 2 / unit
 
     grad[0] = (E[1] - E[0]) / unit
     grad[-1] = (E[-1] - E[-2]) / unit
@@ -184,39 +201,5 @@ def grad(E, x, slice, deltaK):
 
 def grad_at_cone(E, x, slice, deltaK):
     g = grad(E, x, slice, deltaK)
-    return g[len(x) // 2 + 1]
+    return g[len(x) // 2]
 
-#THIS IS NOT A SCRIPT, IT IS A MODULE. THIS IS FOR DEBUGGING:
-if __name__ == '__main__':
-
-    #PARAMETROS
-    K = 4 * np.pi / 3
-    i = 31
-    t = 0.11
-    U = 0
-
-    theta = np.arccos((3 * i ** 2 + 3 * i + 0.5) / (3 * i ** 2 + 3 * i + 1))
-    deltaK = 2 * K * np.sin(theta / 2)
-    deltaK_vec = np.array([0, deltaK])
-    vf = 0.76 / deltaK
-
-    #DEFINE LOS VECTORES REALES Y RECIPROCOS
-    a1 = np.array([1, np.sqrt(3)]) / 2
-    a2 = np.array([-1, np.sqrt(3)]) / 2
-    # G1 = (4 * np.pi) * ((3 * i + 1) * a1 + a2) / (3 * (3 * i ** 2 + 3 * i + 1))
-    # G2 = (4 * np.pi) * (-(3 * i + 2) * a1 + (3 * i + 1) * a2) / (3 * (3 * i ** 2 + 3 * i + 1))
-    # Gs = (G1, G2)
-
-    G1 = deltaK * np.array([np.sqrt(3)/2, 1/2])
-    G2 = deltaK * (np.array([-np.sqrt(3)/2, 1/2]))-G1
-    Gs = (G1, G2)
-
-    q0 = deltaK * np.array([0, -1])
-    q1 = deltaK * np.array([np.sqrt(3)/2, 1/2])
-    q2 = deltaK * np.array([-np.sqrt(3)/2, 1/2])
-    Qs = (q0, q1, q2)
-
-    np.set_printoptions(threshold = sys.maxsize)
-
-    H = populate_hamiltonian(0, 0, Qs, deltaK_vec, t, theta, vf, U=0)
-    ks = generate_macpath(100, deltaK)

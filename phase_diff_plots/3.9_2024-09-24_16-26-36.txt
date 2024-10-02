@@ -1,0 +1,4 @@
+Differences: 
+ Phase difference 1 -0.15626403497585944 
+ Phase difference 2 -0.0383936964543338 
+ Cumulative difference 1 -0.19465773143019324 

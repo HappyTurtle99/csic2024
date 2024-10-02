@@ -1,0 +1,4 @@
+Differences: 
+ Phase difference 1 [-0.15626403 -0.15626403] 
+Phase difference 1 [-0.0383937 -0.0383937] 
+Phase difference 1 [-0.19465773 -0.19465773] 
