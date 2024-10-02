@@ -15,7 +15,7 @@ def populate_hamiltonian(kx, ky, Qs, deltaK_vec, t, theta, vf, N=None, U=0):
 
     if not N:
         #Calculate number of unit cells:
-        N = 2 * int(np.radians(3.9) / theta / 1.5) + 1
+        N = int(2 * int(np.radians(3.9) / theta / 1.5) + 1)
 
         if N == 1:
             N = 3
@@ -111,11 +111,25 @@ def populate_hamiltonian(kx, ky, Qs, deltaK_vec, t, theta, vf, N=None, U=0):
         H_init[n, n + 1] = d_entry(q0 + dk + center, vf)
     
     H = H_init + H_init.conj().T
+
+    #staggered potential
+    sgn = 1
+    for i in range(4 * N ** 2):
+        H[i, i] = U * sgn
+        sgn *= -1
+
     return H
 
 def band_energy(kx, ky, Qs, deltaK, t, theta, vf, N=None, U=0):
     H = populate_hamiltonian(kx, ky, Qs, deltaK, t, theta, vf, N=N, U=U)
     return LA.eigvalsh(H)
+
+def leveln(kx, ky, Qs, deltaK, t, theta, vf, n, N=None, U=0):
+    H = populate_hamiltonian(kx, ky, Qs, deltaK, t, theta, vf, N=N, U=U)
+    _, vectors = LA.eigh(H)
+    midband = int(len(vectors) / 2) #index of the middle band with positive energy
+    leveln = vectors[:, midband + n]
+    return leveln
 
 def generate_vectors(A, B, C, N):
     A_hat = A / np.linalg.norm(A)
@@ -126,10 +140,21 @@ def generate_vectors(A, B, C, N):
     return vectors
 
 def generate_path(N, pt1, pt2):
+    N = int(N)
     diff = pt2 - pt1
     step_size = np.linalg.norm(diff) / (N - 1)
     vectors = np.array([pt1 + i * step_size * diff / np.linalg.norm(diff) for i in range(N)])
     return vectors
+
+#here, you generate a set of points including only one of the endpoints
+#pt1 or pt2, and you specify which.
+def generate_path_special(N, pt1, pt2, p):
+    path_union = generate_path(N + 1, pt1, pt2)
+    #if p == 1, return the path including pt1
+    if p == 0:
+        return path_union[:-1]
+    else:
+        return path_union[1:]
 
 #generate the path in momentum space used in macdonald's paper
 def generate_macpath(n_pts, deltaK, Qs, starting_cell = (0, 0)):
